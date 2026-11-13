@@ -1,0 +1,21 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <ui:Style src="GameUI.uss" />
+  <ui:VisualElement class="root" picking-mode="Ignore">
+    <ui:VisualElement name="HealthBarBackground" class="health-frame" picking-mode="Ignore">
+      <ui:VisualElement name="HealthBarContainer" class="health-container"><ui:VisualElement name="HealthBar" class="health" /></ui:VisualElement>
+      <ui:VisualElement name="CharacterPortrait" class="portrait" />
+    </ui:VisualElement>
+    <ui:VisualElement class="progress-panel"><ui:VisualElement class="robot-icon" /><ui:Label name="Progress" text="Полагоджено: 0 / 3" class="progress" /></ui:VisualElement>
+    <ui:Label name="Hint" class="hint hidden" />
+    <ui:VisualElement name="NPCDialogue" class="dialogue hidden">
+      <ui:Label text="Полагодь усіх роботів у трьох частинах саду. C — кинути інструмент. Металеві плити по обидва боки стіни відкривають двері на 4 секунди." class="dialogue-text" />
+    </ui:VisualElement>
+    <ui:VisualElement name="WinScreenContainer" class="end hidden">
+      <ui:VisualElement name="WinScreen" class="win-art" />
+    </ui:VisualElement>
+    <ui:VisualElement name="LoseScreenContainer" class="end hidden">
+      <ui:VisualElement name="LoseScreen" class="lose-art" />
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>
+

@@ -25,6 +25,8 @@ public class Projectile : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        // Camera bounds are not gameplay obstacles.
+        if (other.gameObject.layer == 2 || other.GetComponent<PlayerController>() != null) return;
         EnemyController enemy = other.GetComponent<EnemyController>();
         if (enemy != null)
         {
@@ -38,3 +40,4 @@ public class Projectile : MonoBehaviour
         Destroy(gameObject);
     }
 }
+

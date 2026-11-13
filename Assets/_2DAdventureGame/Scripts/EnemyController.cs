@@ -6,6 +6,8 @@ public class EnemyController : MonoBehaviour
     public float speed = 1.0f;
     public bool vertical;
     public float changeTime = 3.0f;
+    public int initialDirection = 1;
+    [Min(0)] public float initialPatrolOffset = 0;
 
     // Внутрішні компоненти та змінні
     Rigidbody2D rigidbody2d;
@@ -13,17 +15,21 @@ public class EnemyController : MonoBehaviour
     float timer;
     int direction = 1;
     bool broken = true;
+    public bool isBroken => broken;
+    public AudioClip repairSound;
 
     void Start()
     {
         rigidbody2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        timer = changeTime;
+        timer = Mathf.Clamp(changeTime - initialPatrolOffset, 0.05f, changeTime);
+        direction = initialDirection < 0 ? -1 : 1;
     }
 
     void Update()
     {
         // Таймер патрулювання
+        if (!broken || (GameManager.instance != null && GameManager.instance.ended)) return;
         timer -= Time.deltaTime;
         if (timer < 0)
         {
@@ -35,7 +41,7 @@ public class EnemyController : MonoBehaviour
     void FixedUpdate()
     {
         // Якщо ворог полагоджений — зупиняємо рух
-        if (!broken)
+        if (!broken || (GameManager.instance != null && GameManager.instance.ended))
         {
             return;
         }
@@ -44,7 +50,7 @@ public class EnemyController : MonoBehaviour
 
         if (vertical)
         {
-            position.y = position.y + speed * direction * Time.deltaTime;
+            position.y = position.y + speed * direction * Time.fixedDeltaTime;
             if (animator != null)
             {
                 animator.SetFloat("Move X", 0);
@@ -53,7 +59,7 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
-            position.x = position.x + speed * direction * Time.deltaTime;
+            position.x = position.x + speed * direction * Time.fixedDeltaTime;
             if (animator != null)
             {
                 animator.SetFloat("Move X", direction);
@@ -77,7 +83,10 @@ public class EnemyController : MonoBehaviour
     // Метод ремонту ворога
     public void Fix()
     {
+        if (!broken) return;
         broken = false;
+        var source = GetComponent<AudioSource>();
+        if (source != null && repairSound != null) source.PlayOneShot(repairSound);
         rigidbody2d.simulated = false; // Вимикаємо фізику та тригери
         if (animator != null)
         {
@@ -85,3 +94,4 @@ public class EnemyController : MonoBehaviour
         }
     }
 }
+

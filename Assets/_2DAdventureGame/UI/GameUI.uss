@@ -1,0 +1,23 @@
+.root { flex-grow: 1; color: #ffffff; font-size: 24px; }
+.health-frame { position: absolute; left: 24px; top: 24px; width: 300px; height: 138px; background-image: url("project://database/Assets/_2DAdventureGame/Art/Ducko/UI/UIHealthFrame.png"); -unity-background-scale-mode: scale-to-fit; }
+.health-container { position: absolute; left: 124px; top: 44px; width: 163px; height: 43px; overflow: hidden; }
+.health { height: 100%; width: 100%; background-image: url("project://database/Assets/_2DAdventureGame/Art/Ducko/UI/UIHealthBar.png"); }
+.portrait { position: absolute; left: 5px; top: 9px; width: 118px; height: 118px; background-image: url("project://database/Assets/_2DAdventureGame/Art/Ducko/UI/CharacterPortrait.png"); -unity-background-scale-mode: scale-to-fit; }
+.progress-panel { position: absolute; right: 24px; top: 24px; flex-direction: row; align-items: center; padding: 18px 24px; background-image: url("project://database/Assets/_2DAdventureGame/Art/Ducko/UI/UIDialogueBox.png"); -unity-slice-left: 30; -unity-slice-right: 30; -unity-slice-top: 30; -unity-slice-bottom: 30; }
+.robot-icon { width: 52px; height: 58px; background-image: url("project://database/Assets/_2DAdventureGame/Art/Ducko/Characters/Enemy.png"); -unity-background-scale-mode: scale-to-fit; margin-right: 12px; }
+.progress { color: #172c36; font-size: 26px; -unity-font-style: bold; }
+.win-art { width: 100%; height: 100%; background-image: url("project://database/Assets/_2DAdventureGame/Tutorial_Demo/Demo_Art/Common/WinScreen.png"); -unity-background-scale-mode: scale-to-fit; }
+.lose-art { width: 100%; height: 100%; background-image: url("project://database/Assets/_2DAdventureGame/Tutorial_Demo/Demo_Art/Common/LoseScreen.png"); -unity-background-scale-mode: scale-to-fit; }
+.result-art { position: absolute; top: 3%; left: 10%; right: 10%; bottom: 15%; }
+.result-footer { position: absolute; left: 0; right: 0; bottom: 2%; align-items: center; }
+.controls { position: absolute; left: 28px; bottom: 20px; background-color: #172c36; padding: 8px 14px; font-size: 21px; }
+.hint { align-self: center; margin-top: 140px; max-width: 80%; background-image: url("project://database/Assets/_2DAdventureGame/Art/Ducko/UI/UIDialogueBox.png"); -unity-slice-left: 30; -unity-slice-right: 30; -unity-slice-top: 30; -unity-slice-bottom: 30; color: #172c36; padding: 22px 28px; white-space: normal; }
+.dialogue { position: absolute; left: 18%; right: 18%; bottom: 90px; min-height: 140px; background-image: url("project://database/Assets/_2DAdventureGame/Art/Ducko/UI/UIDialogueBox.png"); -unity-slice-left: 30; -unity-slice-right: 30; -unity-slice-top: 30; -unity-slice-bottom: 30; padding: 30px; }
+.dialogue-text { color: #172c36; white-space: normal; font-size: 25px; }
+.end { position: absolute; left: 0; right: 0; top: 0; bottom: 0; justify-content: center; align-items: center; background-color: black; }
+.end-card { width: 65%; align-items: center; padding: 40px; background-color: #203c47; }
+.title { font-size: 42px; -unity-font-style: bold; white-space: normal; -unity-text-align: middle-center; }
+.body { white-space: normal; -unity-text-align: middle-center; margin: 24px 0; }
+Button { background-color: #f6cc61; color: #172c36; font-size: 28px; padding: 14px 36px; margin-top: 16px; border-width: 0; }
+Button:hover { background-color: #ffe9a0; }
+.hidden { display: none; }

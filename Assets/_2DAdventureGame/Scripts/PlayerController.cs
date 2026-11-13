@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -5,117 +6,84 @@ public class PlayerController : MonoBehaviour
 {
     public InputAction MoveAction;
     public InputAction LaunchAction;
-
-    public float speed = 3.0f;
+    public InputAction TalkAction;
+    public float speed = 3f;
     public int maxHealth = 5;
-    public float timeInvincible = 2.0f;
+    public float timeInvincible = 2f;
+    public float timeBetweenShots = .5f;
     public GameObject projectilePrefab;
-
-    public int health { get { return currentHealth; } }
-
-    Rigidbody2D rigidbody2d;
+    public AudioClip hitSound, healSound, launchSound;
+    public int health { get; private set; }
+    Rigidbody2D body;
     Animator animator;
-
-    Vector2 move;
-    Vector2 moveDirection = new Vector2(1, 0);
-    int currentHealth;
-    bool isInvincible;
-    float damageCooldown;
-
-    // Таймер затримки між пострілами (ДЗ)
-    public float timeBetweenShots = 0.5f;
-    float shotTimer;
-
-    void Start()
+    AudioSource audioSource;
+    SpriteRenderer spriteRenderer;
+    Color baseColor;
+    Vector2 move, look = Vector2.right;
+    float immunity, shotTimer;
+    NonPlayerCharacter lastNPC;
+    void Awake()
     {
-        MoveAction.Enable();
-        LaunchAction.Enable();
-
-        rigidbody2d = GetComponent<Rigidbody2D>();
+        body = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        currentHealth = maxHealth;
+        audioSource = GetComponent<AudioSource>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        baseColor = spriteRenderer.color;
+        health = maxHealth;
     }
-
+    void OnEnable() { MoveAction.Enable(); LaunchAction.Enable(); TalkAction.Enable(); }
+    void OnDisable()
+    {
+        MoveAction.Disable(); LaunchAction.Disable(); TalkAction.Disable();
+        if (lastNPC != null) lastNPC.ShowBubble(false);
+    }
+    void Start() { UIHandler.instance?.SetHealthValue(1f); }
     void Update()
     {
-        move = MoveAction.ReadValue<Vector2>();
-
-        if (!Mathf.Approximately(move.x, 0.0f) || !Mathf.Approximately(move.y, 0.0f))
-        {
-            moveDirection.Set(move.x, move.y);
-            moveDirection.Normalize();
-        }
-
+        immunity = Mathf.Max(0, immunity - Time.deltaTime);
+        shotTimer = Mathf.Max(0, shotTimer - Time.deltaTime);
+        if (GameManager.instance != null && GameManager.instance.ended) { move = Vector2.zero; return; }
+        move = Vector2.ClampMagnitude(MoveAction.ReadValue<Vector2>(), 1f);
+        if (move.sqrMagnitude > .001f) look = move.normalized;
         if (animator != null)
         {
-            animator.SetFloat("Look X", moveDirection.x);
-            animator.SetFloat("Look Y", moveDirection.y);
+            animator.SetFloat("Look X", look.x); animator.SetFloat("Look Y", look.y);
             animator.SetFloat("Speed", move.magnitude);
         }
-
-        // Таймер невразливості
-        if (isInvincible)
+        if (LaunchAction.WasPressedThisFrame() && shotTimer <= 0 && projectilePrefab != null)
         {
-            damageCooldown -= Time.deltaTime;
-            if (damageCooldown < 0)
-            {
-                isInvincible = false;
-            }
+            var projectile = Instantiate(projectilePrefab, body.position + Vector2.up * .5f, Quaternion.identity).GetComponent<Projectile>();
+            projectile.Launch(look, 300f);
+            shotTimer = timeBetweenShots;
+            animator?.SetTrigger("Launch"); Play(launchSound);
         }
-
-        // Оновлення затримки пострілу
-        if (shotTimer > 0)
+        var hit = Physics2D.Raycast(body.position + Vector2.up * .2f, look, 1.5f, LayerMask.GetMask("NPC"));
+        var npc = hit.collider != null ? hit.collider.GetComponent<NonPlayerCharacter>() : null;
+        if (lastNPC != npc && lastNPC != null) lastNPC.ShowBubble(false);
+        lastNPC = npc;
+        if (npc != null)
         {
-            shotTimer -= Time.deltaTime;
-        }
-
-        // Постріл на клавішу C
-        if (LaunchAction.WasPressedThisFrame() && shotTimer <= 0)
-        {
-            Launch();
-            shotTimer = timeBetweenShots; // Запуск перезарядки
+            npc.ShowBubble(true);
+            if (TalkAction.WasPressedThisFrame()) UIHandler.instance?.DisplayDialogue();
         }
     }
-
-    void FixedUpdate()
-    {
-        Vector2 position = (Vector2)rigidbody2d.position + move * speed * Time.deltaTime;
-        rigidbody2d.MovePosition(position);
-    }
-
+    void FixedUpdate() { body.MovePosition(body.position + move * speed * Time.fixedDeltaTime); }
     public void ChangeHealth(int amount)
     {
+        if (health <= 0 || (GameManager.instance != null && GameManager.instance.ended)) return;
         if (amount < 0)
         {
-            if (isInvincible)
-            {
-                return;
-            }
-            isInvincible = true;
-            damageCooldown = timeInvincible;
-            if (animator != null)
-            {
-                animator.SetTrigger("Hit");
-            }
+            if (immunity > 0) return;
+            immunity = timeInvincible;
+            animator?.SetTrigger("Hit"); Play(hitSound);
         }
-
-        currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
-        Debug.Log(currentHealth + "/" + maxHealth);
+        int previous = health;
+        health = Mathf.Clamp(health + amount, 0, maxHealth);
+        if (health == previous) return;
+        if (amount > 0) Play(healSound);
+        StopAllCoroutines(); StartCoroutine(Flash(amount < 0 ? new Color(1f,.45f,.35f) : new Color(.45f,1f,.65f)));
+        UIHandler.instance?.SetHealthValue(health / (float)maxHealth);
     }
-
-    void Launch()
-    {
-        GameObject projectileObject = Instantiate(projectilePrefab, rigidbody2d.position + Vector2.up * 0.5f, Quaternion.identity);
-        Projectile projectile = projectileObject.GetComponent<Projectile>();
-
-        if (projectile != null)
-        {
-            projectile.Launch(moveDirection, 300);
-        }
-
-        if (animator != null)
-        {
-            animator.SetTrigger("Launch");
-        }
-    }
+    IEnumerator Flash(Color color) { spriteRenderer.color = color; yield return new WaitForSeconds(.16f); spriteRenderer.color = baseColor; }
+    void Play(AudioClip clip) { if (audioSource != null && clip != null) audioSource.PlayOneShot(clip); }
 }
